@@ -1,0 +1,31 @@
+<svg width="64" height="64" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop stop-color="#8417ff" offset="0%" />
+      <stop stop-color="#6d14d6" offset="100%" />
+    </linearGradient>
+  </defs>
+
+  <path
+    d="M26.5 6C34.5081 6 41 12.4919 41 20.5C41 24.7667 39.1555 28.6074 36.225 31.3067L37.9612 36.5137C38.1972 37.2217 37.4949 37.8719 36.8217 37.5731L31.5403 35.229C29.9284 35.7272 28.2371 36 26.5 36C23.0578 36 19.8885 34.8229 17.303 32.845C18.972 33.5935 20.8398 34 22.7983 34C30.5292 34 36.7966 27.7326 36.7966 20C36.7966 12.2674 30.5292 6 22.7983 6C18.3174 6 14.319 8.10603 11.7314 11.393C15.0153 8.09121 19.5293 6 24.5 6H26.5Z"
+    fill="url(#logo-gradient)"
+    fill-opacity="0.6"
+  />
+
+  <path
+    d="M22.7983 34C15.0674 34 8.79999 27.7326 8.79999 20C8.79999 12.2674 15.0674 6 22.7983 6C30.5292 6 36.7966 12.7326 36.7966 20.4651C36.7966 28.1977 30.5292 34 22.7983 34Z"
+    fill="url(#logo-gradient)"
+  />
+
+  <path
+    d="M8.8 29L4.00001 34L11.6 32.8"
+    stroke="url(#logo-gradient)"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <circle cx="18" cy="20" r="2" fill="white" fill-opacity="0.9" />
+  <circle cx="23" cy="20" r="2" fill="white" fill-opacity="0.9" />
+  <circle cx="28" cy="20" r="2" fill="white" fill-opacity="0.9" />
+</svg>

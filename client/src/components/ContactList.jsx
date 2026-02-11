@@ -1,8 +1,8 @@
 import { useAppStore } from "@/store";
 import React from "react";
 import { Avatar, AvatarImage } from "./ui/avatar";
-import { HOST } from "@/utils/constants";
 import { getColor } from "@/lib/utils";
+import { FaHashtag } from "react-icons/fa";
 
 function ContactList({ contacts, isChannel = false }) {
   const {
@@ -15,60 +15,88 @@ function ContactList({ contacts, isChannel = false }) {
   const handleClick = (contact) => {
     if (isChannel) setSelectedChatType("channel");
     else setSelectedChatType("contact");
+
     setSelectedChatData(contact);
+
     if (selectedChatData && selectedChatData._id !== contact._id) {
       setSelectedChatMessages([]);
     }
   };
 
   return (
-    <div className="mt-5">
+    <div className="mt-5 flex flex-col gap-1">
       {contacts.map((contact) => (
         <div
           key={contact._id}
-          className={`pl-10 py-2 transition-all duration-300 cursor-pointer ${
-            selectedChatData && selectedChatData._id === contact._id
-              ? "bg-[#8417ff] hover:bg-[#8417ff]"
-              : "hover:bg-[#f1f1f111]"
-          }`}
+          className={`relative flex items-center gap-4 p-3 mx-2 rounded-lg transition-all duration-300 cursor-pointer ease-in-out
+            ${
+              selectedChatData && selectedChatData._id === contact._id
+                ? "bg-[#2f303b] border-l-4 border-[#8417ff] text-white shadow-md" // Lighter Gray with Purple Accent Border
+                : "text-neutral-400 hover:bg-[#2a2b2f] hover:text-white hover:translate-x-1"
+            }`}
           onClick={() => handleClick(contact)}
         >
-          <div className="flex gap-5 items-center justify-start text-neutral-300">
+          {/* ---------------- AVATAR / ICON SECTION ---------------- */}
+          <div className="relative shrink-0">
             {!isChannel && (
-              <Avatar className="h-10 w-10 rounded-full overflow-hidden">
+              <Avatar className="h-10 w-10 rounded-full overflow-hidden border border-white/10 shadow-sm">
                 {contact.image ? (
                   <AvatarImage
-                    src={`${HOST}/${contact.image}`}
+                    src={contact.image.url}
                     alt="profile"
                     className="object-cover w-full h-full bg-black"
                   />
                 ) : (
                   <div
-                    className={`
-                        ${
-                          selectedChatData &&
-                          selectedChatData._id === contact._id
-                            ? "bg-[#ffffff22] border border-white/70"
-                            : getColor(contact.color)
-                        }
-                        uppercase h-10 w-10 text-lg border flex items-center justify-center rounded-full`}
+                    className={`${
+                      selectedChatData && selectedChatData._id === contact._id
+                        ? "bg-[#8417ff] text-white border-none" // Highlight avatar when active
+                        : `${getColor(contact.color)}`
+                    } uppercase h-10 w-10 text-lg border flex items-center justify-center rounded-full transition-all duration-300`}
                   >
                     {contact.firstName
-                      ? contact.firstName.split("").shift()
-                      : contact.email.split("").shift()}
+                      ? contact.firstName[0]
+                      : contact.email[0]}
                   </div>
                 )}
               </Avatar>
             )}
+
             {isChannel && (
-              <div className="bg-[#ffffff22] h-10 w-10 flex items-center justify-center rounded-full">
-                #
+              <div
+                className={`h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300 ${
+                  selectedChatData && selectedChatData._id === contact._id
+                    ? "bg-[#8417ff] text-white shadow-md"
+                    : "bg-[#1c1d25] border border-white/10 text-neutral-400"
+                }`}
+              >
+                <FaHashtag className="text-sm" />
               </div>
             )}
+          </div>
+
+          {/* ---------------- NAME SECTION ---------------- */}
+          <div className="flex flex-col flex-1 min-w-0">
             {isChannel ? (
-              <span>{contact.name}</span>
+              <span
+                className={`capitalize font-medium truncate tracking-wide text-sm ${
+                  selectedChatData && selectedChatData._id === contact._id
+                    ? "text-white font-semibold"
+                    : "text-neutral-400 group-hover:text-white"
+                }`}
+              >
+                {contact.name}
+              </span>
             ) : (
-              <span>{contact.firstName ? `${contact.firstName} ${contact.lastName}`: contact.email}</span>
+              <span
+                className={`capitalize font-medium truncate tracking-wide text-sm ${
+                  selectedChatData && selectedChatData._id === contact._id
+                    ? "text-white font-semibold"
+                    : "text-neutral-400 group-hover:text-white"
+                }`}
+              >
+                {`${contact.firstName} ${contact.lastName}`}
+              </span>
             )}
           </div>
         </div>

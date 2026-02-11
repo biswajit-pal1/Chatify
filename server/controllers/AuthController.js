@@ -1,7 +1,8 @@
 import { compare } from "bcrypt";
 import User from "../models/UserModel.js";
 import jwt from "jsonwebtoken";
-import { renameSync, unlinkSync } from "fs";
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 
@@ -11,19 +12,31 @@ const createToken = (email, userId) => {
   });
 };
 
-export const signup = async (request, response, next) => {
+export const signup = async (request, response) => {
   try {
     const { email, password } = request.body;
+
     if (!email || !password) {
-      return response.status(400).send("Email and Password is required");
+      return response.status(400).json({
+        message: "Email and password are required.",
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return response.status(400).json({
+        message: "Email already exists. Please login.",
+      });
     }
 
     const user = await User.create({ email, password });
+
     response.cookie("jwt", createToken(email, user._id), {
       maxAge,
       secure: true,
       sameSite: "None",
     });
+
     return response.status(201).json({
       user: {
         id: user._id,
@@ -33,9 +46,12 @@ export const signup = async (request, response, next) => {
     });
   } catch (error) {
     console.log(error);
-    return response.status(500).send("Signup function error");
+    return response.status(500).json({
+      message: "Signup failed. Please try again.",
+    });
   }
 };
+
 
 export const login = async (request, response, next) => {
   try {
@@ -45,11 +61,15 @@ export const login = async (request, response, next) => {
     }
     const user = await User.findOne({ email });
     if (!user) {
-      return response.status(404).send("User with the given email not found");
+      return response.status(404).json({
+        message: "User with this email does not exist.",
+      });      
     }
     const auth = await compare(password, user.password);
     if (!auth) {
-      return response.status(400).send("Password is incorrect.");
+      return response.status(401).json({
+        message: "Incorrect password.",
+      });      
     }
 
     response.cookie("jwt", createToken(email, user._id), {
@@ -127,53 +147,74 @@ export const updateProfile = async (request, response, next) => {
   }
 };
 
-export const addProfileImage = async (request, response, next) => {
+export const addProfileImage = async (req, res) => {
   try {
-    if (!request.file) {
-      return response.status(400).send("File is required.");
+    if (!req.file) {
+      res.status(400).send("File is required.");
+      return;
     }
 
-    const date = Date.now();
-    let fileName = "uploads/profiles/" + date + request.file.originalname;
-    renameSync(request.file.path, fileName);
+    if (!req.file.mimetype.startsWith("image/")) {
+      res.status(400).send("Only image files are allowed.");
+      return;
+    }
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "profiles", resource_type: "image" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+
+      stream.on("error", reject);
+      streamifier.createReadStream(req.file.buffer).pipe(stream);
+    });
 
     const updatedUser = await User.findByIdAndUpdate(
-      request.userId,
-      { image: fileName },
-      { new: true, runValidators: true }
+      req.userId,
+      {
+        image: {
+          url: uploadResult.secure_url,
+          publicId: uploadResult.public_id,
+        },
+      },
+      { new: true },
     );
 
-    return response.status(201).json({
-      image: updatedUser.image,
-    });
+    res.status(201).json({ image: updatedUser.image });
   } catch (error) {
-    console.log(error);
-    return response.status(500).send("Add profile image function error");
+    console.error("Add profile image error:", error);
+    res.status(500).send("Image upload failed");
   }
 };
 
-export const removeProfileImage = async (request, response, next) => {
-  try {
-    const { userId } = request;
-    const user = await User.findById(userId);
 
+export const removeProfileImage = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
     if (!user) {
-      return response.status(404).send("User not found.");
+      res.status(404).send("User not found.");
+      return;
     }
 
-    if (user.image) {
-      unlinkSync(user.image);
+    if (user.image?.publicId) {
+      await cloudinary.uploader.destroy(user.image.publicId, {
+        resource_type: "image",
+      });
     }
 
     user.image = null;
     await user.save();
 
-    return response.status(201).send("Profile image removed successfully.");
+    res.status(200).send("Profile image removed successfully.");
   } catch (error) {
-    console.log(error);
-    return response.status(500).send("Remove profile image function error");
+    console.error("Remove image error:", error);
+    res.status(500).send("Remove image failed");
   }
 };
+
 
 export const logout = async (request, response, next) => {
   try {
