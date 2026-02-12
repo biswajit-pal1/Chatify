@@ -20,7 +20,6 @@ export const SocketProvider = ({ children }) => {
         query: { userId: userInfo.id },
       });
       socket.current.on("connect", () => {
-        console.log("Connected to socket server");
       });
 
       const handleReceiveMessage = (message) => {
@@ -35,7 +34,6 @@ export const SocketProvider = ({ children }) => {
           (selectedChatData._id === message.sender._id ||
             selectedChatData._id === message.recipient._id)
         ) {
-          console.log("Message received: ", message);
           addMessage(message);
         }
         addContactInDMContacts(message);
