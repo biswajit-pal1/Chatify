@@ -48,7 +48,23 @@ function App() {
   }, [userInfo, setUserInfo]);
 
   if(loading) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-[#1b1c24]">
+        <div className="flex flex-col gap-6 items-center">
+          {/* Animated Text Logo */}
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-purple-600 animate-pulse">
+            Chatify
+          </h1>
+
+          {/* Typing Indicator / Loader Animation */}
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
